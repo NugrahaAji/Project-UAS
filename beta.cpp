@@ -84,9 +84,9 @@ int net[8];
 int netX[8];
 int netY[8];
 
-int fish[8];
-int fishX[8];
-int fishY[8];
+int fish[20];
+int fishX[20];
+int fishY[20];
 
 void textcol(int color){
     SetConsoleTextAttribute(console, color);
@@ -217,7 +217,7 @@ void drawnet(int loc){
     if(net[loc] == true){
         textcol(GREY);
         gotoxy(netX[loc], netY[loc]);
-        cout << "\xB2";
+        cout << "V";
         textcol(WHITE);
     }
 }
@@ -235,14 +235,14 @@ void gennet(int loc){
 
 void resetnet(int loc){
     removenet(loc);
-    net[loc];
+    net[loc] = false;
 }
 
 // Fish section
 void genfish(int loc){
 
     // memberi batasan spawn ikan pada absis [10,22]
-    fishY[loc] = 8 + rand() % (16);
+    fishY[loc] = 10 + rand() % (14);
 }
 
 void drawfish(int loc){
@@ -277,9 +277,16 @@ void timerrr(){
 
 // collision section
 bool fishhit(int loc){
-    for(int i = 0; i < 4; i++){
-
+    for(int i = 0; i < 8; i++){
+        if(fishX[loc] - netX[i] >= 0 && fishX[loc] - netX[loc] <= 1){
+            if(fishY[loc] - netY[loc] >= 0 && fishY[loc] - netY[loc] <= 1){
+                resetnet(i);
+                resetfish(loc);
+                return true;
+            }
+        }
     }
+    return false;
 }
 
 void finish(){
@@ -297,6 +304,18 @@ void sailing(){
     fish[5] = true;
     fish[6] = false;
     fish[7] = false;
+    fish[8] = false;
+    fish[9] = false;
+    fish[10] = false;
+    fish[11] = false;
+    fish[12] = false;
+    fish[13] = false;
+    fish[14] = false;
+    fish[15] = false;
+    fish[16] = false;
+    fish[17] = false;
+    fish[18] = false;
+    fish[19] = false;
 
     net[0] = false;
     net[1] = false;
@@ -317,6 +336,7 @@ void sailing(){
     drawship();
     for (int i = 0; i < 8; i++) {
         genfish(i);
+        gennet(i);
     }
 
     timer = 60;
@@ -327,12 +347,12 @@ void sailing(){
             if (motion == 'd' || motion == 'D' || motion == RIGHT) {
                 if (shipX < maxX - 14) {
                     removeship();
-                    shipX+=2;
+                    shipX++;
                 }
             } else if (motion == 'a' || motion == 'A' || motion == LEFT) {
                 if (shipX > 6) {
                     removeship();
-                    shipX-=2;
+                    shipX--;
                 }
             } else if (motion == SPACE) {
                 for (int i = 0; i < 8; i++) {
@@ -353,46 +373,55 @@ void sailing(){
         for (int i = 0; i < 8; i++) {
             drawfish(i);
         }
-//                }else if(motion == ESC){
-//                    gameover();
-//                    return;
-//                }
-        Sleep(60);
+        for (int i = 0; i < 8; i++){
+            if (fishhit(i) == true){
+                score++;
+                fishcaught();
+            }
+        }   
 
-        for (int i = 0; i < 8; i++) {
+        Sleep(80);
+
+        for(int i = 0; i < 8; i++){
             removenet(i);
         }
-
-        for (int i = 0; i < 8; i++) {
+        
+        for(int i = 0; i < 8; i++){
             removefish(i);
         }
 
-        if (fishX[0] == 32) {
-            if (fish[1] == false) {
+        if(fishX[0] == 32){
+            if(fish[1] == false){
                 fish[1] = true;
             }
         }
 
-        for (int i = 0; i < 8; i++) {
-            if (fish[i] == true) {
+        for(int i = 0; i < 8; i++){
+            if(fish[i] == true){
                 fishX[i]++;
             }
         }
 
-        for (int i = 0; i < 8; i++) {
-            if (net[i] == true && netX[i] < maxX - 1) {
+        for(int i = 0; i < 8; i++){
+            if(net[i] == true && netY[i] < maxY - 1){
                 netY[i]++;
             }
         }
 
-        for (int i = 0; i < 8; i++) {
-            if (netX[i] == maxX - 1) {
+        for(int i = 0; i < 8; i++ ){
+            if(netY[i] == maxY - 3 ){
                 resetnet(i);
             }
         }
-        drawship();
+        for(int i=0; i<8; i++){
+			if(fishX[i] == maxX - 3){
+				resetfish(i);
+			}
+		}
+    drawship();
     }
-}
+
+}   
 
 int main(){
     setcursor(0,0);
