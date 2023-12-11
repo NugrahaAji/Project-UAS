@@ -1,6 +1,7 @@
 #include<conio.h>
 #include<windows.h>
 #include<iostream>
+#include<time.h>
 using namespace std;
 
 #define SCHEIGHT 26
@@ -19,19 +20,21 @@ using namespace std;
 #define LEFT 75
 #define RIGHT 77
 #define ESC 27
+#define SPACE 32
 
 HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
 COORD cursor;
 
-int maxX = SCHEIGHT;
-int maxY = SCWIDTH;
+int maxX = SCWIDTH;
+int maxY = SCHEIGHT;
 int midX = maxX/2;
 int midY = maxY/2;
-int shipX = 7;
-int shipY = 6;
+int shipX = 6;
+int shipY = 5;
 
 bool game = true;
 int score = 0;
+int timer;
 
 char ship[3][13] = {{' ', ' ', '_','\xC9', '\xCB', '\xCB', '\xB2', '\xCB', '\xBB', '_', '_','_',' '},
                    {' ', '}', '\xDB', '\xDB', '\xDB', '\xDB', '\xDB', '\xDB', '\xDB', '\xDB', '\xDB', '\xDF', '\xDF'},
@@ -77,13 +80,13 @@ char bmap[2][88] = {{'\xDB','\xDB','\xDB','\xB2','\xB2','\xB1','\xB1','\xB1','\x
                     '\xB2','\xB2','\xB2','\xDB','\xDB','\xDB','\xDB','\xDB','\xDB'}
                    };
 
-int net[5];
-int netX[5];
-int netY[5];
+int net[8];
+int netX[8];
+int netY[8];
 
-int fish[6];
-int fishX[6];
-int fishY[6];
+int fish[8];
+int fishX[8];
+int fishY[8];
 
 void textcol(int color){
     SetConsoleTextAttribute(console, color);
@@ -165,7 +168,7 @@ void instructions(){
 	// textcol(WHite);
 	// cout << " as many as possible";
 	// 	gotoxy(midX - 17, midY-1);
-	// cout << "Before time runs out";
+	// cout << "Before timerr runs out";
 	// textcolor(BLUE);
 	// gotoxy(midX - 10, midY - 2);
 	
@@ -225,6 +228,7 @@ void removenet(int loc){
 }
 
 void gennet(int loc){
+    
     netX[loc] = shipX + 6;
     netY[loc] = shipY + 2;
 }
@@ -238,7 +242,7 @@ void resetnet(int loc){
 void genfish(int loc){
 
     // memberi batasan spawn ikan pada absis [10,22]
-    fishY[loc] = 10 + rand() % (19);
+    fishY[loc] = 8 + rand() % (16);
 }
 
 void drawfish(int loc){
@@ -257,14 +261,141 @@ void removefish(int loc){
 
 void resetfish(int loc){
     removefish(loc);
-    fishX[loc] = 7;
+    fishX[loc] = 6;
     genfish(loc);
 }
 
+void fishcaught(){
+    gotoxy(maxX - 20, 3);
+    cout << "Fish Caught : " << score;
+}
 
+void timerrr(){
+    gotoxy(maxX - 13, 2);
+    cout << "timer : " << timer <<"s";
+}
 
-int main(){
+// collision section
+bool fishhit(int loc){
+    for(int i = 0; i < 4; i++){
+
+    }
+}
+
+void finish(){
+    system("cls");
+    drawborder();
+
+}
+void sailing(){
+    score = 0;
+    fish[0] = true;
+    fish[1] = false;
+    fish[2] = true;
+    fish[3] = false;
+    fish[4] = false;
+    fish[5] = true;
+    fish[6] = false;
+    fish[7] = false;
+
+    net[0] = false;
+    net[1] = false;
+    net[2] = false;
+    net[3] = false;
+    net[4] = false;
+    net[5] = false;
+    net[6] = false;
+    net[7] = false;
+
+    fishX[0] = fishX[1] = fishX[2] = fishX[3] = fishX[4] = fishX[5] = fishX[6] = fishX[7] = 7;
+    netX[0] = netX[1] = netX[2] = netX[3] = netX[4] = netX[5] = netX[6] = netX[7] = shipX + 6;
+    netY[0] = netY[1] = netY[2] = netY[3] = netY[4] = netY[5] = netY[6] = netY[7] = shipY + 2;
+
     drawborder();
     drawmap();
-    getch();
+    fishcaught();
+    drawship();
+    for (int i = 0; i < 8; i++) {
+        genfish(i);
+    }
+
+    timer = 60;
+
+    while (true) {
+        if (kbhit()) {
+            char motion = getch();
+            if (motion == 'd' || motion == 'D' || motion == RIGHT) {
+                if (shipX < maxX - 14) {
+                    removeship();
+                    shipX+=2;
+                }
+            } else if (motion == 'a' || motion == 'A' || motion == LEFT) {
+                if (shipX > 6) {
+                    removeship();
+                    shipX-=2;
+                }
+            } else if (motion == SPACE) {
+                for (int i = 0; i < 8; i++) {
+                    if (net[i] == false) {
+                        net[i] = true;
+                        netX[i] = shipX + 6;
+                        netY[i] = shipY + 2;
+                        break;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < 8; i++) {
+            drawnet(i);
+        }
+
+        for (int i = 0; i < 8; i++) {
+            drawfish(i);
+        }
+//                }else if(motion == ESC){
+//                    gameover();
+//                    return;
+//                }
+        Sleep(60);
+
+        for (int i = 0; i < 8; i++) {
+            removenet(i);
+        }
+
+        for (int i = 0; i < 8; i++) {
+            removefish(i);
+        }
+
+        if (fishX[0] == 32) {
+            if (fish[1] == false) {
+                fish[1] = true;
+            }
+        }
+
+        for (int i = 0; i < 8; i++) {
+            if (fish[i] == true) {
+                fishX[i]++;
+            }
+        }
+
+        for (int i = 0; i < 8; i++) {
+            if (net[i] == true && netX[i] < maxX - 1) {
+                netY[i]++;
+            }
+        }
+
+        for (int i = 0; i < 8; i++) {
+            if (netX[i] == maxX - 1) {
+                resetnet(i);
+            }
+        }
+        drawship();
+    }
+}
+
+int main(){
+    setcursor(0,0);
+    srand((unsigned)time(NULL));
+    sailing();
 }
